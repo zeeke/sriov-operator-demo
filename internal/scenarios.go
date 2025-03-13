@@ -22,7 +22,8 @@ import (
 type scenarioFactory func() ([]runtime.Object, error)
 
 var Scenarios map[string]scenarioFactory = map[string]scenarioFactory{
-	"intel-demo": intelDemo,
+	"intel-demo":    intelDemo,
+	"mellanox-demo": mellanoxDemo,
 }
 
 func DumpScenario(factory scenarioFactory) error {
@@ -103,11 +104,84 @@ func intelDemo() ([]runtime.Object, error) {
 		WithReplicas(4).
 		Definition
 
+	deploymentVfio := deployment.NewBuilder(
+		ecogoinfra.Stub,
+		"demo-intel-vfio",
+		"demo-intel",
+		map[string]string{"app": "demo-intel-vfio"},
+		*sleepContainer,
+	).
+		WithSecondaryNetwork([]*multus.NetworkSelectionElement{pod.StaticAnnotation("demo-intel-vfio")}).
+		WithReplicas(4).
+		Definition
+
 	return []runtime.Object{
 		netdevicePolicy, vfioPolicy,
 		netdeviceNet, vfioNet,
 		workloadNs,
-		deploymentNetdevice,
+		deploymentNetdevice, deploymentVfio,
+	}, nil
+}
+
+func mellanoxDemo() ([]runtime.Object, error) {
+	clients := testclient.New("")
+
+	sriovInfos, err := cluster.DiscoverSriov(clients, "openshift-sriov-network-operator")
+	if err != nil {
+		return nil, err
+	}
+
+	var node string = sriovInfos.Nodes[0]
+
+	nic, err := sriovInfos.FindOneMellanoxSriovDevice(node)
+	if err != nil {
+		return nil, err
+	}
+
+	netdevicePolicy := defineSriovPolicy("demo-mellanox-netdevice", nic.Name+"#10-20", node, 32, "mellanoxnetdevice", "netdevice")
+	rdmaPolicy := defineSriovPolicy("demo-mellanox-rdma", nic.Name+"#21-31", node, 32, "mallanoxrdma", "netdevice", func(snnp *sriovv1.SriovNetworkNodePolicy) {
+		snnp.Spec.IsRdma = true
+	})
+
+	netdeviceNet := defineSriovNetwork("demo-mellanox-netdevice", "demo-mellanox", "mellanoxnetdevice", ipamIpv4)
+	rdmaNet := defineSriovNetwork("demo-mellanox-rdma", "demo-mellanox", "mallanoxrdma", ipamIpv4)
+
+	workloadNs := defineNamespace("demo-mellanox")
+
+	sleepContainer, err := pod.NewContainerBuilder("sleep", "quay.io/openshift-kni/cnf-tests:4.19", []string{"/bin/bash", "-c", "sleep INF"}).
+		WithSecurityContext(&corev1.SecurityContext{}).
+		GetContainerCfg()
+	if err != nil {
+		return nil, err
+	}
+
+	deploymentNetdevice := deployment.NewBuilder(
+		ecogoinfra.Stub,
+		"demo-mellanox-netdev",
+		"demo-mellanox",
+		map[string]string{"app": "demo-mellanox-netdev"},
+		*sleepContainer,
+	).
+		WithSecondaryNetwork([]*multus.NetworkSelectionElement{pod.StaticAnnotation("demo-mellanox-netdevice")}).
+		WithReplicas(4).
+		Definition
+
+	deploymentRdma := deployment.NewBuilder(
+		ecogoinfra.Stub,
+		"demo-mellanox-rmda",
+		"demo-mellanox",
+		map[string]string{"app": "demo-mellanox-rdma"},
+		*sleepContainer,
+	).
+		WithSecondaryNetwork([]*multus.NetworkSelectionElement{pod.StaticAnnotation("demo-mellanox-rdma")}).
+		WithReplicas(4).
+		Definition
+
+	return []runtime.Object{
+		netdevicePolicy, rdmaPolicy,
+		netdeviceNet, rdmaNet,
+		workloadNs,
+		deploymentNetdevice, deploymentRdma,
 	}, nil
 }
 
