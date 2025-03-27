@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/zeeke/sriov-operator-demo/internal"
+	"github.com/zeeke/sriov-operator-demo/internal/scenarios"
 )
 
 var scenario string
@@ -24,12 +24,12 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("--scenario parameter is mandatory")
 		}
 
-		f, ok := internal.Scenarios[scenario]
+		f, ok := scenarios.Index[scenario]
 		if !ok {
 			return fmt.Errorf("scenario [%s] not found", scenario)
 		}
 
-		return internal.DumpScenario(f)
+		return scenarios.Dump(f)
 	},
 }
 
