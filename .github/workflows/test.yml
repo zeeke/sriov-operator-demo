@@ -10,11 +10,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Kind
-      uses: engineerd/setup-kind@v0.3.1
-      with:
-        version: v0.11.1
-
     - name: Start Kind cluster
       run: make setup-kind
 
