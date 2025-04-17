@@ -1,8 +1,6 @@
 package scenarios
 
 import (
-	"log"
-
 	testclient "github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/client"
 	"github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/cluster"
 	"github.com/openshift-kni/eco-goinfra/pkg/deployment"
@@ -19,25 +17,20 @@ func init() {
 }
 
 func intelDemo() ([]runtime.Object, error) {
-	log.Println("XXX0")
-
 	clients := testclient.New("")
 
-	log.Println("XXX")
 	sriovInfos, err := cluster.DiscoverSriov(clients, "openshift-sriov-network-operator")
 	if err != nil {
 		return nil, err
 	}
-	log.Println("XXX1")
 
 	var node string = sriovInfos.Nodes[0]
 
 	nic, err := FindOneIntelSriovDevice(sriovInfos, node)
-
 	if err != nil {
 		return nil, err
 	}
-	log.Println("XXX2")
+
 	netdevicePolicy := DefineSriovPolicy("demo-intel-netdevice", nic.Name+"#10-20", node, 32, "intelnetdevice", "netdevice")
 	vfioPolicy := DefineSriovPolicy("demo-intel-vfio", nic.Name+"#21-31", node, 32, "intelvfio", "vfio-pci")
 
