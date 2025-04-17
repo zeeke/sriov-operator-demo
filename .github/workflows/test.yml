@@ -1,0 +1,31 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  generate-examples:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Kind
+      uses: engineerd/setup-kind@v0.3.1
+      with:
+        version: v0.11.1
+
+    - name: Start Kind cluster
+      run: make setup-kind
+
+    - name: Wait for cluster to be ready
+      run: make generate-examples
+
+    - name: Check for modified files
+      run: |
+        modified_files=$(git diff)
+        if [ -n "$modified_files" ]; then
+          echo "Working directory has changes:"
+          echo $modified_files
+          exit 1
+        fi
