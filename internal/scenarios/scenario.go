@@ -19,7 +19,7 @@ var Index map[string]scenarioFactory = map[string]scenarioFactory{}
 func Dump(factory scenarioFactory) error {
 	resources, err := factory()
 	if err != nil {
-		return err
+		return fmt.Errorf("can't evaluate scenario: %w", err)
 	}
 
 	scheme := runtime.NewScheme()

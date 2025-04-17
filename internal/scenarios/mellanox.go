@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	Index["intel-nics"] = mellanoxDemo
+	Index["mellanox-nics"] = mellanoxDemo
 }
 
 func mellanoxDemo() ([]runtime.Object, error) {

@@ -1,0 +1,140 @@
+# go run main.go -s intel-nics
+
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  creationTimestamp: null
+  name: demo-intel-netdevice
+  namespace: openshift-sriov-network-operator
+spec:
+  bridge: {}
+  deviceType: netdevice
+  nicSelector:
+    pfNames:
+    - eno12399#10-20
+  nodeSelector:
+    kubernetes.io/hostname: worker-0
+  numVfs: 32
+  priority: 99
+  resourceName: intelnetdevice
+status: {}
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  creationTimestamp: null
+  name: demo-intel-vfio
+  namespace: openshift-sriov-network-operator
+spec:
+  bridge: {}
+  deviceType: vfio-pci
+  nicSelector:
+    pfNames:
+    - eno12399#21-31
+  nodeSelector:
+    kubernetes.io/hostname: worker-0
+  numVfs: 32
+  priority: 99
+  resourceName: intelvfio
+status: {}
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  creationTimestamp: null
+  name: demo-intel-netdevice
+  namespace: openshift-sriov-network-operator
+spec:
+  ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
+  linkState: enable
+  networkNamespace: demo-intel
+  resourceName: intelnetdevice
+status: {}
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  creationTimestamp: null
+  name: demo-intel-vfio
+  namespace: openshift-sriov-network-operator
+spec:
+  ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
+  linkState: enable
+  networkNamespace: demo-intel
+  resourceName: intelvfio
+status: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  labels:
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged
+    security.openshift.io/scc.podSecurityLabelSync: "false"
+  name: demo-intel
+spec: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: demo-intel-netdev
+  namespace: demo-intel
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: demo-intel-netdev
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[{"name":"demo-intel-netdevice","cni-args":null}]'
+      creationTimestamp: null
+      labels:
+        app: demo-intel-netdev
+    spec:
+      containers:
+      - command:
+        - /bin/bash
+        - -c
+        - sleep INF
+        image: quay.io/openshift-kni/cnf-tests:4.19
+        name: sleep
+        resources: {}
+        securityContext: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: demo-intel-vfio
+  namespace: demo-intel
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: demo-intel-vfio
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[{"name":"demo-intel-vfio","cni-args":null}]'
+      creationTimestamp: null
+      labels:
+        app: demo-intel-vfio
+    spec:
+      containers:
+      - command:
+        - /bin/bash
+        - -c
+        - sleep INF
+        image: quay.io/openshift-kni/cnf-tests:4.19
+        name: sleep
+        resources: {}
+        securityContext: {}
+status: {}

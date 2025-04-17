@@ -1,0 +1,131 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodeState
+metadata:
+  annotations:
+    sriovnetwork.openshift.io/current-state: Idle
+    sriovnetwork.openshift.io/desired-state: Idle
+  name: worker-0
+  namespace: openshift-sriov-network-operator
+spec:
+  bridges: {}
+  system: {}
+status:
+  interfaces:
+  - deviceID: 159b
+    driver: ice
+    eSwitchMode: legacy
+    linkAdminState: up
+    linkSpeed: 25000 Mb/s
+    linkType: ETH
+    mac: b4:96:91:c7:fe:18
+    mtu: 1500
+    name: eno12399
+    pciAddress: "0000:31:00.0"
+    totalvfs: 128
+    vendor: "8086"
+  - deviceID: 159b
+    driver: ice
+    eSwitchMode: legacy
+    linkAdminState: up
+    linkSpeed: 25000 Mb/s
+    linkType: ETH
+    mac: b4:96:91:c7:fe:19
+    mtu: 1500
+    name: eno12409
+    pciAddress: "0000:31:00.1"
+    totalvfs: 128
+    vendor: "8086"
+  - deviceID: 101d
+    driver: mlx5_core
+    eSwitchMode: switchdev
+    linkAdminState: up
+    linkSpeed: 100000 Mb/s
+    linkType: ETH
+    mac: 04:3f:72:fe:d1:68
+    mtu: 1500
+    name: ens2f0np0
+    numVfs: 8
+    pciAddress: 0000:ca:00.0
+    totalvfs: 8
+    vendor: 15b3
+  - deviceID: 101d
+    driver: mlx5_core
+    eSwitchMode: legacy
+    linkAdminState: up
+    linkSpeed: 100000 Mb/s
+    linkType: ETH
+    mac: 04:3f:72:fe:d1:69
+    mtu: 1500
+    name: ens2f1np1
+    pciAddress: 0000:ca:00.1
+    totalvfs: 8
+    vendor: 15b3
+  syncStatus: Succeeded
+  system:
+    rdmaMode: shared
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodeState
+metadata:
+  annotations:
+    sriovnetwork.openshift.io/current-state: Idle
+    sriovnetwork.openshift.io/desired-state: Idle
+  name: worker-1
+  namespace: openshift-sriov-network-operator
+spec:
+  bridges: {}
+  system: {}
+status:
+  interfaces:
+  - deviceID: 159b
+    driver: ice
+    eSwitchMode: legacy
+    linkAdminState: up
+    linkSpeed: 25000 Mb/s
+    linkType: ETH
+    mac: b4:96:91:c7:fe:18
+    mtu: 1500
+    name: eno12399
+    pciAddress: "0000:31:00.0"
+    totalvfs: 128
+    vendor: "8086"
+  - deviceID: 159b
+    driver: ice
+    eSwitchMode: legacy
+    linkAdminState: up
+    linkSpeed: 25000 Mb/s
+    linkType: ETH
+    mac: b4:96:91:c7:fe:19
+    mtu: 1500
+    name: eno12409
+    pciAddress: "0000:31:00.1"
+    totalvfs: 128
+    vendor: "8086"
+  - deviceID: 101d
+    driver: mlx5_core
+    eSwitchMode: switchdev
+    linkAdminState: up
+    linkSpeed: 100000 Mb/s
+    linkType: ETH
+    mac: 04:3f:72:fe:d1:68
+    mtu: 1500
+    name: ens2f0np0
+    numVfs: 8
+    pciAddress: 0000:ca:00.0
+    totalvfs: 8
+    vendor: 15b3
+  - deviceID: 101d
+    driver: mlx5_core
+    eSwitchMode: legacy
+    linkAdminState: up
+    linkSpeed: 100000 Mb/s
+    linkType: ETH
+    mac: 04:3f:72:fe:d1:69
+    mtu: 1500
+    name: ens2f1np1
+    pciAddress: 0000:ca:00.1
+    totalvfs: 8
+    vendor: 15b3
+  syncStatus: Succeeded
+  system:
+    rdmaMode: shared
