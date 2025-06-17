@@ -93,7 +93,7 @@ spec:
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[{"name":"demo-mellanox-netdevice","cni-args":null}]'
+        k8s.v1.cni.cncf.io/networks: demo-mellanox-netdev
       creationTimestamp: null
       labels:
         app: demo-mellanox-netdev
@@ -119,15 +119,15 @@ spec:
   replicas: 4
   selector:
     matchLabels:
-      app: demo-mellanox-rdma
+      app: demo-mellanox-rmda
   strategy: {}
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[{"name":"demo-mellanox-rdma","cni-args":null}]'
+        k8s.v1.cni.cncf.io/networks: demo-mellanox-rmda
       creationTimestamp: null
       labels:
-        app: demo-mellanox-rdma
+        app: demo-mellanox-rmda
     spec:
       containers:
       - command:

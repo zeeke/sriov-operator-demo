@@ -4,13 +4,12 @@ import (
 	sriovv1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	testclient "github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/client"
 	"github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/cluster"
-	"github.com/openshift-kni/eco-goinfra/pkg/deployment"
-	"github.com/openshift-kni/eco-goinfra/pkg/pod"
-	"github.com/zeeke/sriov-operator-demo/internal/ecogoinfra"
-	multus "gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/ptr"
 )
 
 func init() {
@@ -42,34 +41,43 @@ func mellanoxDemo() ([]runtime.Object, error) {
 
 	workloadNs := DefineNamespace("demo-mellanox")
 
-	sleepContainer, err := pod.NewContainerBuilder("sleep", "quay.io/openshift-kni/cnf-tests:4.19", []string{"/bin/bash", "-c", "sleep INF"}).
-		WithSecurityContext(&corev1.SecurityContext{}).
-		GetContainerCfg()
-	if err != nil {
-		return nil, err
+	deploymentNetdevice := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{Name: "demo-mellanox-netdev", Namespace: "demo-mellanox"},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": "demo-mellanox-netdev"},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:      map[string]string{"app": "demo-mellanox-netdev"},
+					Annotations: map[string]string{"k8s.v1.cni.cncf.io/networks": string("demo-mellanox-netdev")},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{makeSleepContainer()},
+				},
+			},
+			Replicas: ptr.To[int32](4),
+		},
 	}
 
-	deploymentNetdevice := deployment.NewBuilder(
-		ecogoinfra.Stub,
-		"demo-mellanox-netdev",
-		"demo-mellanox",
-		map[string]string{"app": "demo-mellanox-netdev"},
-		*sleepContainer,
-	).
-		WithSecondaryNetwork([]*multus.NetworkSelectionElement{pod.StaticAnnotation("demo-mellanox-netdevice")}).
-		WithReplicas(4).
-		Definition
-
-	deploymentRdma := deployment.NewBuilder(
-		ecogoinfra.Stub,
-		"demo-mellanox-rmda",
-		"demo-mellanox",
-		map[string]string{"app": "demo-mellanox-rdma"},
-		*sleepContainer,
-	).
-		WithSecondaryNetwork([]*multus.NetworkSelectionElement{pod.StaticAnnotation("demo-mellanox-rdma")}).
-		WithReplicas(4).
-		Definition
+	deploymentRdma := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{Name: "demo-mellanox-rdma", Namespace: "demo-mellanox"},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": "demo-mellanox-rdma"},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:      map[string]string{"app": "demo-mellanox-rdma"},
+					Annotations: map[string]string{"k8s.v1.cni.cncf.io/networks": string("demo-mellanox-rdma")},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{makeSleepContainer()},
+				},
+			},
+			Replicas: ptr.To[int32](4),
+		},
+	}
 
 	return []runtime.Object{
 		netdevicePolicy, rdmaPolicy,

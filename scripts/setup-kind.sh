@@ -2,7 +2,7 @@
 
 script_dir=$(dirname "$(readlink -f "$0")")
 
-cat <<EOF | kind create cluster --config=-
+cat <<EOF | kind create cluster --kubeconfig ${KUBECONFIG} --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:

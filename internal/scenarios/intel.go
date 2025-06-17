@@ -3,12 +3,12 @@ package scenarios
 import (
 	testclient "github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/client"
 	"github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/cluster"
-	"github.com/openshift-kni/eco-goinfra/pkg/deployment"
-	"github.com/openshift-kni/eco-goinfra/pkg/pod"
-	"github.com/zeeke/sriov-operator-demo/internal/ecogoinfra"
-	multus "gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -39,34 +39,43 @@ func intelDemo() ([]runtime.Object, error) {
 
 	workloadNs := DefineNamespace("demo-intel")
 
-	sleepContainer, err := pod.NewContainerBuilder("sleep", "quay.io/openshift-kni/cnf-tests:4.19", []string{"/bin/bash", "-c", "sleep INF"}).
-		WithSecurityContext(&corev1.SecurityContext{}).
-		GetContainerCfg()
-	if err != nil {
-		return nil, err
+	deploymentNetdevice := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{Name: "demo-intel-netdev", Namespace: "demo-intel"},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": "demo-intel-netdev"},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:      map[string]string{"app": "demo-intel-netdev"},
+					Annotations: map[string]string{"k8s.v1.cni.cncf.io/networks": string("demo-intel-netdev")},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{makeSleepContainer()},
+				},
+			},
+			Replicas: ptr.To[int32](4),
+		},
 	}
 
-	deploymentNetdevice := deployment.NewBuilder(
-		ecogoinfra.Stub,
-		"demo-intel-netdev",
-		"demo-intel",
-		map[string]string{"app": "demo-intel-netdev"},
-		*sleepContainer,
-	).
-		WithSecondaryNetwork([]*multus.NetworkSelectionElement{pod.StaticAnnotation("demo-intel-netdevice")}).
-		WithReplicas(4).
-		Definition
-
-	deploymentVfio := deployment.NewBuilder(
-		ecogoinfra.Stub,
-		"demo-intel-vfio",
-		"demo-intel",
-		map[string]string{"app": "demo-intel-vfio"},
-		*sleepContainer,
-	).
-		WithSecondaryNetwork([]*multus.NetworkSelectionElement{pod.StaticAnnotation("demo-intel-vfio")}).
-		WithReplicas(4).
-		Definition
+	deploymentVfio := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{Name: "demo-intel-vfio", Namespace: "demo-intel"},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": "demo-intel-vfio"},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:      map[string]string{"app": "demo-intel-vfio"},
+					Annotations: map[string]string{"k8s.v1.cni.cncf.io/networks": string("demo-intel-vfio")},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{makeSleepContainer()},
+				},
+			},
+			Replicas: ptr.To[int32](4),
+		},
+	}
 
 	return []runtime.Object{
 		netdevicePolicy, vfioPolicy,

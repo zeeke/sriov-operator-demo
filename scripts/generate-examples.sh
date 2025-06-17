@@ -1,8 +1,5 @@
 #!/bin/bash -x
 
-kind export kubeconfig --kubeconfig /tmp/kubeconfig
-export KUBECONFIG=/tmp/kubeconfig
-
 exec='go run main.go'
 
 declare -A cmds
@@ -14,7 +11,7 @@ for key in ${!cmds[@]}; do
     echo $key
     cmd=${cmds[$key]}
     echo "# Generated with"
-    echo "# $cmd" >> ./examples/${key}
+    echo "# $cmd" > ./examples/${key}
     echo >> ./examples/$key
     $cmd >> ./examples/$key
 done

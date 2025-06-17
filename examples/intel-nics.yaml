@@ -92,7 +92,7 @@ spec:
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[{"name":"demo-intel-netdevice","cni-args":null}]'
+        k8s.v1.cni.cncf.io/networks: demo-intel-netdev
       creationTimestamp: null
       labels:
         app: demo-intel-netdev
@@ -123,7 +123,7 @@ spec:
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[{"name":"demo-intel-vfio","cni-args":null}]'
+        k8s.v1.cni.cncf.io/networks: demo-intel-vfio
       creationTimestamp: null
       labels:
         app: demo-intel-vfio
