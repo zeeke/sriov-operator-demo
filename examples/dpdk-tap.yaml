@@ -1,0 +1,153 @@
+# go run main.go -s dpdk-tap
+
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  creationTimestamp: null
+  name: demo-dpdk-vfio
+  namespace: openshift-sriov-network-operator
+spec:
+  bridge: {}
+  deviceType: vfio-pci
+  nicSelector:
+    pfNames:
+    - eno12399#10-20
+  nodeSelector:
+    kubernetes.io/hostname: cnfdr22.telco5g.eng.rdu2.redhat.com
+  numVfs: 32
+  priority: 99
+  resourceName: dpdkvfio
+status: {}
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  creationTimestamp: null
+  name: demo-dpdk-vfio
+  namespace: openshift-sriov-network-operator
+spec:
+  linkState: enable
+  networkNamespace: demo-dpdk-tap
+  resourceName: dpdkvfio
+status: {}
+---
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  creationTimestamp: null
+  name: demo-tap-cni
+  namespace: demo-dpdk-tap
+spec:
+  config: "{\n\t\t\t\t\"cniVersion\": \"0.3.1\",\n\t\t\t\t\"name\": \"demo-tap-cni\",\n\t\t\t\t\"type\":
+    \"tap\"\n\t\t\t}"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  labels:
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged
+    security.openshift.io/scc.podSecurityLabelSync: "false"
+  name: demo-dpdk-tap
+spec: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: dpdk-sender
+  namespace: demo-dpdk-tap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dpdk-sender
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: demo-dpdk-vfio
+      creationTimestamp: null
+      labels:
+        app: dpdk-sender
+    spec:
+      containers:
+      - args:
+        - "\n\t\t\t# Wait for SR-IOV interface to be ready\n\t\t\twhile [ ! -d /sys/class/net/net1
+          ]; do sleep 1; done\n\t\t\t\n\t\t\t# Bind interface to DPDK\n\t\t\tdpdk-devbind.py
+          --bind=vfio-pci $(basename $(readlink -f /sys/class/net/net1/device))\n\t\t\t\n\t\t\t#
+          Run DPDK testpmd in txonly mode to generate packets\n\t\t\ttestpmd -l 0-1
+          -n 4 --no-huge -- \\\n\t\t\t\t--forward-mode=txonly --stats-period=1 --auto-start
+          || sleep inf\n\t\t"
+        command:
+        - /bin/bash
+        - -c
+        image: quay.io/openshift-kni/dpdk:4.19
+        name: dpdk-sender
+        resources:
+          limits:
+            cpu: 500m
+            memory: 200Mi
+          requests:
+            cpu: 500m
+            memory: 200Mi
+        securityContext:
+          privileged: true
+          runAsUser: 0
+      nodeSelector:
+        kubernetes.io/hostname: cnfdr22.telco5g.eng.rdu2.redhat.com
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: dpdk-receiver
+  namespace: demo-dpdk-tap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dpdk-receiver
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: "[\n\t\t\t\t\t\t\t{\"name\": \"demo-dpdk-vfio\"},\n\t\t\t\t\t\t\t{\"name\":
+          \"demo-tap-cni\", \"interface\": \"tap0\"}\n\t\t\t\t\t\t]"
+      creationTimestamp: null
+      labels:
+        app: dpdk-receiver
+    spec:
+      containers:
+      - args:
+        - "\n\t\t\t# Wait for SR-IOV interface to be ready\n\t\t\twhile [ ! -d /sys/class/net/net1
+          ]; do sleep 1; done\n\t\t\t\n\t\t\t# Bind SR-IOV interface to DPDK\n\t\t\tdpdk-devbind.py
+          --bind=vfio-pci $(basename $(readlink -f /sys/class/net/net1/device))\n\t\t\t\n\t\t\t#
+          Start packet capture on tap interface in background\n\t\t\ttcpdump -i tap0
+          -l -n | while read line; do\n\t\t\t\techo \"TAP RECEIVED: $line\"\n\t\t\tdone
+          &\n\t\t\t\n\t\t\t# Run testpmd to forward packets from DPDK port to tap
+          interface\n\t\t\ttestpmd -l 0-1 -n 4 --no-huge --vdev=net_tap0,iface=tap0
+          -- \\\n\t\t\t\t--portmask=0x3 --forward-mode=io --auto-start --stats-period=1
+          || sleep inf\n\t\t"
+        command:
+        - /bin/bash
+        - -c
+        image: quay.io/openshift-kni/dpdk:4.19
+        name: dpdk-receiver
+        resources:
+          limits:
+            cpu: 500m
+            memory: 200Mi
+          requests:
+            cpu: 500m
+            memory: 200Mi
+        securityContext:
+          privileged: true
+          runAsUser: 0
+      nodeSelector:
+        kubernetes.io/hostname: cnfdr22.telco5g.eng.rdu2.redhat.com
+status: {}
