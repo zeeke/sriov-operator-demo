@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	nadv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	sriovv1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 )
@@ -34,6 +37,16 @@ func Dump(factory scenarioFactory) error {
 	}
 
 	err = appsv1.AddToScheme(scheme)
+	if err != nil {
+		return err
+	}
+
+	err = nadv1.AddToScheme(scheme)
+	if err != nil {
+		return err
+	}
+
+	err = rbacv1.AddToScheme(scheme)
 	if err != nil {
 		return err
 	}

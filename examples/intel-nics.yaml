@@ -13,7 +13,7 @@ spec:
     pfNames:
     - eno12399#10-20
   nodeSelector:
-    kubernetes.io/hostname: worker-0
+    kubernetes.io/hostname: cnfdr22.telco5g.eng.rdu2.redhat.com
   numVfs: 32
   priority: 99
   resourceName: intelnetdevice
@@ -32,7 +32,7 @@ spec:
     pfNames:
     - eno12399#21-31
   nodeSelector:
-    kubernetes.io/hostname: worker-0
+    kubernetes.io/hostname: cnfdr22.telco5g.eng.rdu2.redhat.com
   numVfs: 32
   priority: 99
   resourceName: intelvfio
