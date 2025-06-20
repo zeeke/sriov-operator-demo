@@ -27,3 +27,23 @@ Apply generated resources
 sriov-operator-demo --scenario intel-demo | oc apply -f -
 ```
 
+## Available Scenarios
+
+The following scenarios are currently supported:
+
+<!-- AUTO-GENERATED-SCENARIOS-START -->
+- `intel-nics`
+- `mellanox-nics`
+- `switchdev`
+<!-- AUTO-GENERATED-SCENARIOS-END -->
+
+## Updating Documentation
+
+To update the README.md with the current list of available scenarios, run:
+
+```bash
+make update-doc
+```
+
+This will automatically regenerate the "Available Scenarios" section above.
+
