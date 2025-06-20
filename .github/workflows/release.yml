@@ -1,0 +1,95 @@
+name: Automated Release
+
+on:
+  schedule:
+    # Run on the 1st day of every month at 09:00 UTC
+    - cron: '0 9 1 * *'
+  workflow_dispatch: # Allow manual triggering for testing
+
+permissions:
+  contents: write # Required for creating tags and releases
+
+jobs:
+  create-monthly-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetch full history for proper versioning
+
+    - name: Generate version tag
+      id: version
+      run: |
+        # Generate tag in format v0.YYYY.MM
+        YEAR=$(date +%Y)
+        MONTH=$(date +%m)
+        TAG="v0.${YEAR}.${MONTH}"
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "Generated tag: $TAG"
+
+    - name: Check if tag already exists
+      id: check_tag
+      run: |
+        if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "Tag ${{ steps.version.outputs.tag }} already exists"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "Tag ${{ steps.version.outputs.tag }} does not exist"
+        fi
+
+    - name: Create tag
+      if: steps.check_tag.outputs.exists == 'false'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "${{ steps.version.outputs.tag }}" -m "Monthly release ${{ steps.version.outputs.tag }}"
+        git push origin "${{ steps.version.outputs.tag }}"
+
+    - name: Generate release notes
+      if: steps.check_tag.outputs.exists == 'false'
+      id: release_notes
+      run: |
+        # Get the previous monthly tag for comparison
+        PREV_TAG=$(git tag -l "v0.*" | sort -V | tail -n 2 | head -n 1)
+        if [ -z "$PREV_TAG" ]; then
+          PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+        fi
+        
+        echo "Generating release notes from $PREV_TAG to ${{ steps.version.outputs.tag }}"
+        
+        # Generate changelog
+        cat > release_notes.md << EOF
+        # SR-IOV Operator Demo ${{ steps.version.outputs.tag }}
+        
+        This is an automated monthly release containing the latest changes to the SR-IOV Operator Demo.
+        
+        ## Changes since last release
+        
+        EOF
+        
+        # Add commit messages since last tag
+        git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD" >> release_notes.md
+        
+        # Set multiline output
+        {
+          echo 'notes<<EOF'
+          cat release_notes.md
+          echo EOF
+        } >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
+      if: steps.check_tag.outputs.exists == 'false'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create "${{ steps.version.outputs.tag }}" \
+          --title "SR-IOV Operator Demo ${{ steps.version.outputs.tag }}" \
+          --notes-file release_notes.md
+
+    - name: Skip release creation
+      if: steps.check_tag.outputs.exists == 'true'
+      run: |
+        echo "Release ${{ steps.version.outputs.tag }} already exists, skipping creation" 
