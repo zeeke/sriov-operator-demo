@@ -1,15 +1,13 @@
 TARGET_BIN=$(PWD)/bin/sriov-operator-demo
-KUBECONFIG?=$(PWD)/bin/kubeconfig
+KUBECONFIG?=$(PWD)/bin/kind_kubeconfig
 
-build: $(TARGET_BIN)
-$(TARGET_BIN):
+build $(TARGET_BIN): 
 	go build -o $(TARGET_BIN)
 
 generate-examples:
-	./scripts/generate-examples.sh
+	KUBECONFIG=$(KUBECONFIG) ./scripts/generate-examples.sh
 
-setup-kind: $(KUBECONFIG)
-$(KUBECONFIG):
+setup-kind:
 	./scripts/setup-kind.sh
 
 update-doc:

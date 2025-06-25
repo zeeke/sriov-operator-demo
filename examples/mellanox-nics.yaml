@@ -113,21 +113,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   creationTimestamp: null
-  name: demo-mellanox-rmda
+  name: demo-mellanox-rdma
   namespace: demo-mellanox
 spec:
   replicas: 4
   selector:
     matchLabels:
-      app: demo-mellanox-rmda
+      app: demo-mellanox-rdma
   strategy: {}
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: demo-mellanox-rmda
+        k8s.v1.cni.cncf.io/networks: demo-mellanox-rdma
       creationTimestamp: null
       labels:
-        app: demo-mellanox-rmda
+        app: demo-mellanox-rdma
     spec:
       containers:
       - command:
