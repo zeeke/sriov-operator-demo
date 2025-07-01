@@ -60,25 +60,19 @@ jobs:
         
         echo "Generating release notes from $PREV_TAG to ${{ steps.version.outputs.tag }}"
         
-        # Generate changelog
-        cat > release_notes.md << EOF
-        # SR-IOV Operator Demo ${{ steps.version.outputs.tag }}
-        
-        This is an automated monthly release containing the latest changes to the SR-IOV Operator Demo.
-        
-        ## Changes since last release
-        
-        EOF
-        
-        # Add commit messages since last tag
-        git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD" >> release_notes.md
-        
-        # Set multiline output
+        # Create release notes file
         {
-          echo 'notes<<EOF'
-          cat release_notes.md
-          echo EOF
-        } >> $GITHUB_OUTPUT
+          echo "# SR-IOV Operator Demo ${{ steps.version.outputs.tag }}"
+          echo
+          echo "This is an automated monthly release containing the latest changes to the SR-IOV Operator Demo."
+          echo
+          echo "## Changes since last release"
+          echo
+          git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD"
+        } > release_notes.md
+
+        # Set output using the new GitHub Actions multiline syntax
+        echo "notes=$(cat release_notes.md)" >> "$GITHUB_OUTPUT"
 
     - name: Create GitHub Release
       if: steps.check_tag.outputs.exists == 'false'
