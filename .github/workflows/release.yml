@@ -71,8 +71,11 @@ jobs:
           git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD"
         } > release_notes.md
 
-        # Set output using the new GitHub Actions multiline syntax
-        echo "notes=$(cat release_notes.md)" >> "$GITHUB_OUTPUT"
+        # Set multiline output using GitHub Actions delimiter syntax
+        delimiter="EOF_$(date +%s)"
+        echo "notes<<$delimiter" >> "$GITHUB_OUTPUT"
+        cat release_notes.md >> "$GITHUB_OUTPUT"
+        echo "$delimiter" >> "$GITHUB_OUTPUT"
 
     - name: Create GitHub Release
       if: steps.check_tag.outputs.exists == 'false'
