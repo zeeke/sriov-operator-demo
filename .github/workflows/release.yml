@@ -70,21 +70,11 @@ jobs:
           echo
           git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD"
         } > release_notes.md
-
-        # Set multiline output using GitHub Actions delimiter syntax
-        delimiter="EOF_$(date +%s)"
-        echo "notes<<$delimiter" >> "$GITHUB_OUTPUT"
-        cat release_notes.md >> "$GITHUB_OUTPUT"
-        echo "$delimiter" >> "$GITHUB_OUTPUT"
-
-    - name: Create GitHub Release
-      if: steps.check_tag.outputs.exists == 'false'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh release create "${{ steps.version.outputs.tag }}" \
-          --title "SR-IOV Operator Demo ${{ steps.version.outputs.tag }}" \
-          --notes-file release_notes.md
+      
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        body_path: release_notes.md
 
     - name: Skip release creation
       if: steps.check_tag.outputs.exists == 'true'
