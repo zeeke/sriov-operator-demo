@@ -75,6 +75,8 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         body_path: release_notes.md
+        tag_name: ${{ steps.version.outputs.tag }}
+        release_name: ${{ steps.version.outputs.tag }}
 
     - name: Skip release creation
       if: steps.check_tag.outputs.exists == 'true'
