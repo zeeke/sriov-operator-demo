@@ -16,7 +16,17 @@ func init() {
 	Index["mellanox-nics"] = mellanoxDemo
 }
 
+type mellanoxNicsConfig struct {
+	RdmaResourceName string `env:"RDMA_RESOURCE_NAME, default=mallanoxrdma"`
+}
+
 func mellanoxDemo() ([]runtime.Object, error) {
+	var c mellanoxNicsConfig
+	err := loadConfigFromEnv(&c, "MELLANOX_NICS_")
+	if err != nil {
+		return nil, err
+	}
+
 	clients := testclient.New("")
 
 	sriovInfos, err := cluster.DiscoverSriov(clients, "openshift-sriov-network-operator")
@@ -32,12 +42,12 @@ func mellanoxDemo() ([]runtime.Object, error) {
 	}
 
 	netdevicePolicy := DefineSriovPolicy("demo-mellanox-netdevice", nic.Name+"#10-20", node, 32, "mellanoxnetdevice", "netdevice")
-	rdmaPolicy := DefineSriovPolicy("demo-mellanox-rdma", nic.Name+"#21-31", node, 32, "mallanoxrdma", "netdevice", func(snnp *sriovv1.SriovNetworkNodePolicy) {
+	rdmaPolicy := DefineSriovPolicy("demo-mellanox-rdma", nic.Name+"#21-31", node, 32, c.RdmaResourceName, "netdevice", func(snnp *sriovv1.SriovNetworkNodePolicy) {
 		snnp.Spec.IsRdma = true
 	})
 
 	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdevice", "demo-mellanox", "mellanoxnetdevice", ipamIpv4)
-	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", "demo-mellanox", "mallanoxrdma", ipamIpv4)
+	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", "demo-mellanox", c.RdmaResourceName, ipamIpv4)
 
 	workloadNs := DefineNamespace("demo-mellanox")
 

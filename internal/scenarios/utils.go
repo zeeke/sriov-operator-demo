@@ -8,6 +8,7 @@ import (
 	sriovv1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	testclient "github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/client"
 	"github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/pod"
+	"github.com/sethvargo/go-envconfig"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -91,4 +92,17 @@ func isDefaultRouteInterface(intfName string, routes []string) bool {
 		}
 	}
 	return false
+}
+
+func loadConfigFromEnv(config any, prefix string) error {
+	ctx := context.Background()
+	err := envconfig.ProcessWith(
+		ctx, &envconfig.Config{
+			Target:   &config,
+			Lookuper: envconfig.PrefixLookuper(prefix, envconfig.OsLookuper()),
+		})
+	if err != nil {
+		return fmt.Errorf("can't load config from env: %w", err)
+	}
+	return nil
 }
