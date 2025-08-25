@@ -36,7 +36,7 @@ spec:
     kubernetes.io/hostname: worker-0
   numVfs: 32
   priority: 99
-  resourceName: mallanoxrdma
+  resourceName: mellanoxrdma
 status: {}
 ---
 apiVersion: sriovnetwork.openshift.io/v1
@@ -62,7 +62,7 @@ spec:
   ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
   linkState: enable
   networkNamespace: demo-mellanox
-  resourceName: mallanoxrdma
+  resourceName: mellanoxrdma
 status: {}
 ---
 apiVersion: v1
