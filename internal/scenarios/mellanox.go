@@ -3,7 +3,6 @@ package scenarios
 import (
 	sriovv1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	testclient "github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/client"
-	"github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/cluster"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,7 +16,14 @@ func init() {
 }
 
 type mellanoxNicsConfig struct {
-	RdmaResourceName string `env:"RDMA_RESOURCE_NAME, default=mallanoxrdma"`
+	AppNamespace string       `env:"APP_NAMESPACE, default=demo-mellanox"`
+	Rdma         policyConfig `env:",prefix=RDMA_"`
+	Netdevice    policyConfig `env:",prefix=NETDEVICE_"`
+}
+
+type policyConfig struct {
+	ResourceName string `env:"RESOURCE_NAME"`
+	NumVfs       int    `env:"NUM_VFS, default=32"`
 }
 
 func mellanoxDemo() ([]runtime.Object, error) {
@@ -27,9 +33,16 @@ func mellanoxDemo() ([]runtime.Object, error) {
 		return nil, err
 	}
 
+	if c.Rdma.ResourceName == "" {
+		c.Rdma.ResourceName = "mellanoxrdma"
+	}
+	if c.Netdevice.ResourceName == "" {
+		c.Netdevice.ResourceName = "mellanoxnetdevice"
+	}
+
 	clients := testclient.New("")
 
-	sriovInfos, err := cluster.DiscoverSriov(clients, "openshift-sriov-network-operator")
+	sriovInfos, err := discoverSriovFn(clients, "openshift-sriov-network-operator")
 	if err != nil {
 		return nil, err
 	}
@@ -41,18 +54,18 @@ func mellanoxDemo() ([]runtime.Object, error) {
 		return nil, err
 	}
 
-	netdevicePolicy := DefineSriovPolicy("demo-mellanox-netdevice", nic.Name+"#10-20", node, 32, "mellanoxnetdevice", "netdevice")
-	rdmaPolicy := DefineSriovPolicy("demo-mellanox-rdma", nic.Name+"#21-31", node, 32, c.RdmaResourceName, "netdevice", func(snnp *sriovv1.SriovNetworkNodePolicy) {
+	netdevicePolicy := DefineSriovPolicy("demo-mellanox-netdevice", nic.Name+"#10-20", node, c.Netdevice.NumVfs, c.Netdevice.ResourceName, "netdevice")
+	rdmaPolicy := DefineSriovPolicy("demo-mellanox-rdma", nic.Name+"#21-31", node, c.Rdma.NumVfs, c.Rdma.ResourceName, "netdevice", func(snnp *sriovv1.SriovNetworkNodePolicy) {
 		snnp.Spec.IsRdma = true
 	})
 
-	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdevice", "demo-mellanox", "mellanoxnetdevice", ipamIpv4)
-	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", "demo-mellanox", c.RdmaResourceName, ipamIpv4)
+	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdevice", c.AppNamespace, c.Netdevice.ResourceName, ipamIpv4)
+	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", c.AppNamespace, c.Rdma.ResourceName, ipamIpv4)
 
-	workloadNs := DefineNamespace("demo-mellanox")
+	workloadNs := DefineNamespace(c.AppNamespace)
 
 	deploymentNetdevice := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Name: "demo-mellanox-netdev", Namespace: "demo-mellanox"},
+		ObjectMeta: metav1.ObjectMeta{Name: "demo-mellanox-netdev", Namespace: c.AppNamespace},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"app": "demo-mellanox-netdev"},
@@ -71,7 +84,7 @@ func mellanoxDemo() ([]runtime.Object, error) {
 	}
 
 	deploymentRdma := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Name: "demo-mellanox-rdma", Namespace: "demo-mellanox"},
+		ObjectMeta: metav1.ObjectMeta{Name: "demo-mellanox-rdma", Namespace: c.AppNamespace},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"app": "demo-mellanox-rdma"},

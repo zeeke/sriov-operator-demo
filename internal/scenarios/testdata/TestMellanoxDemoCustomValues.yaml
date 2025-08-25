@@ -1,0 +1,139 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  creationTimestamp: null
+  name: demo-mellanox-netdevice
+  namespace: openshift-sriov-network-operator
+spec:
+  bridge: {}
+  deviceType: netdevice
+  nicSelector:
+    pfNames:
+    - ens1f0#10-20
+  nodeSelector:
+    kubernetes.io/hostname: node1
+  numVfs: 43
+  priority: 99
+  resourceName: mlxnetdevicecustom
+status: {}
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  creationTimestamp: null
+  name: demo-mellanox-rdma
+  namespace: openshift-sriov-network-operator
+spec:
+  bridge: {}
+  deviceType: netdevice
+  isRdma: true
+  nicSelector:
+    pfNames:
+    - ens1f0#21-31
+  nodeSelector:
+    kubernetes.io/hostname: node1
+  numVfs: 42
+  priority: 99
+  resourceName: mlxrdmacustom
+status: {}
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  creationTimestamp: null
+  name: demo-mellanox-netdevice
+  namespace: openshift-sriov-network-operator
+spec:
+  ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
+  linkState: enable
+  networkNamespace: mlxapp-ns
+  resourceName: mlxnetdevicecustom
+status: {}
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  creationTimestamp: null
+  name: demo-mellanox-rdma
+  namespace: openshift-sriov-network-operator
+spec:
+  ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
+  linkState: enable
+  networkNamespace: mlxapp-ns
+  resourceName: mlxrdmacustom
+status: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  labels:
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged
+    security.openshift.io/scc.podSecurityLabelSync: "false"
+  name: mlxapp-ns
+spec: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: demo-mellanox-netdev
+  namespace: mlxapp-ns
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: demo-mellanox-netdev
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: demo-mellanox-netdev
+      creationTimestamp: null
+      labels:
+        app: demo-mellanox-netdev
+    spec:
+      containers:
+      - command:
+        - /bin/bash
+        - -c
+        - sleep INF
+        image: quay.io/openshift-kni/cnf-tests:4.19
+        name: sleep
+        resources: {}
+        securityContext: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: demo-mellanox-rdma
+  namespace: mlxapp-ns
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: demo-mellanox-rdma
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: demo-mellanox-rdma
+      creationTimestamp: null
+      labels:
+        app: demo-mellanox-rdma
+    spec:
+      containers:
+      - command:
+        - /bin/bash
+        - -c
+        - sleep INF
+        image: quay.io/openshift-kni/cnf-tests:4.19
+        name: sleep
+        resources: {}
+        securityContext: {}
+status: {}

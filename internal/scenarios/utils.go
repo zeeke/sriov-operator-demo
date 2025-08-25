@@ -7,6 +7,7 @@ import (
 
 	sriovv1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	testclient "github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/client"
+	"github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/cluster"
 	"github.com/k8snetworkplumbingwg/sriov-network-operator/test/util/pod"
 	"github.com/sethvargo/go-envconfig"
 	"k8s.io/apimachinery/pkg/fields"
@@ -98,7 +99,7 @@ func loadConfigFromEnv(config any, prefix string) error {
 	ctx := context.Background()
 	err := envconfig.ProcessWith(
 		ctx, &envconfig.Config{
-			Target:   &config,
+			Target:   config,
 			Lookuper: envconfig.PrefixLookuper(prefix, envconfig.OsLookuper()),
 		})
 	if err != nil {
@@ -106,3 +107,6 @@ func loadConfigFromEnv(config any, prefix string) error {
 	}
 	return nil
 }
+
+// Defined for mocking purpose
+var discoverSriovFn func(clients *testclient.ClientSet, operatorNamespace string) (*cluster.EnabledNodes, error) = cluster.DiscoverSriov
