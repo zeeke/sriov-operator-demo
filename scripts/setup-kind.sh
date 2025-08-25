@@ -25,7 +25,7 @@ EOF
 
 export KUBECONFIG=${KIND_KUBECONFIG}
 
-kubectl kustomize https://github.com/k8snetworkplumbingwg/sriov-network-operator.git/config/crd/ | kubectl apply -f -
+kubectl kustomize https://github.com/openshift/sriov-network-operator.git/config/crd/ | kubectl apply -f -
 kubectl apply -f examples/mocks/namespaces.yaml
 kubectl apply -f examples/mocks/configmaps.yaml
 kubectl apply -f examples/mocks/sriovnetworknodestates.yaml
