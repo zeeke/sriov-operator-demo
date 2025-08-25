@@ -15,3 +15,5 @@ update-doc:
 
 .PHONY: build generate-examples setup-kind update-doc
 
+test:
+	go test -v ./...

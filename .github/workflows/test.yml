@@ -9,6 +9,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+    
+    - uses: actions/setup-go@v5
+      with:
+        go-version: '^1.24.0'
 
     - name: Start Kind cluster
       run: make setup-kind
@@ -24,3 +28,17 @@ jobs:
           echo $modified_files
           exit 1
         fi
+
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - uses: actions/setup-go@v5
+      with:
+        go-version: '^1.24.0'
+
+    - name: Run unit tests
+      run: make test
