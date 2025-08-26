@@ -110,3 +110,8 @@ func loadConfigFromEnv(config any, prefix string) error {
 
 // Defined for mocking purpose
 var discoverSriovFn func(clients *testclient.ClientSet, operatorNamespace string) (*cluster.EnabledNodes, error) = cluster.DiscoverSriov
+
+type policyConfig struct {
+	ResourceName string `env:"RESOURCE_NAME"`
+	NumVfs       int    `env:"NUM_VFS, default=32"`
+}

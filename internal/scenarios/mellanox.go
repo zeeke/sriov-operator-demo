@@ -21,11 +21,6 @@ type mellanoxNicsConfig struct {
 	Netdevice    policyConfig `env:",prefix=NETDEVICE_"`
 }
 
-type policyConfig struct {
-	ResourceName string `env:"RESOURCE_NAME"`
-	NumVfs       int    `env:"NUM_VFS, default=32"`
-}
-
 func mellanoxDemo() ([]runtime.Object, error) {
 	var c mellanoxNicsConfig
 	err := loadConfigFromEnv(&c, "MELLANOX_NICS_")
