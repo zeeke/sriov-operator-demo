@@ -2,7 +2,7 @@ apiVersion: sriovnetwork.openshift.io/v1
 kind: SriovNetworkNodePolicy
 metadata:
   creationTimestamp: null
-  name: demo-intel-netdevice
+  name: demo-intel-netdev
   namespace: openshift-sriov-network-operator
 spec:
   bridge: {}
@@ -40,7 +40,7 @@ apiVersion: sriovnetwork.openshift.io/v1
 kind: SriovNetwork
 metadata:
   creationTimestamp: null
-  name: demo-intel-netdevice
+  name: demo-intel-netdev
   namespace: openshift-sriov-network-operator
 spec:
   ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'

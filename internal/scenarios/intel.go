@@ -49,10 +49,10 @@ func intelDemo() ([]runtime.Object, error) {
 		return nil, err
 	}
 
-	netdevicePolicy := DefineSriovPolicy("demo-intel-netdevice", nic.Name+"#10-20", node, c.Netdevice.NumVfs, c.Netdevice.ResourceName, "netdevice")
+	netdevicePolicy := DefineSriovPolicy("demo-intel-netdev", nic.Name+"#10-20", node, c.Netdevice.NumVfs, c.Netdevice.ResourceName, "netdevice")
 	vfioPolicy := DefineSriovPolicy("demo-intel-vfio", nic.Name+"#21-31", node, c.Vfio.NumVfs, c.Vfio.ResourceName, "vfio-pci")
 
-	netdeviceNet := DefineSriovNetwork("demo-intel-netdevice", c.AppNamespace, c.Netdevice.ResourceName, ipamIpv4)
+	netdeviceNet := DefineSriovNetwork("demo-intel-netdev", c.AppNamespace, c.Netdevice.ResourceName, ipamIpv4)
 	vfioNet := DefineSriovNetwork("demo-intel-vfio", c.AppNamespace, c.Vfio.ResourceName, ipamIpv4)
 
 	workloadNs := DefineNamespace(c.AppNamespace)
