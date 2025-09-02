@@ -49,12 +49,12 @@ func mellanoxDemo() ([]runtime.Object, error) {
 		return nil, err
 	}
 
-	netdevicePolicy := DefineSriovPolicy("demo-mellanox-netdevice", nic.Name+"#10-20", node, c.Netdevice.NumVfs, c.Netdevice.ResourceName, "netdevice")
+	netdevicePolicy := DefineSriovPolicy("demo-mellanox-netdev", nic.Name+"#10-20", node, c.Netdevice.NumVfs, c.Netdevice.ResourceName, "netdevice")
 	rdmaPolicy := DefineSriovPolicy("demo-mellanox-rdma", nic.Name+"#21-31", node, c.Rdma.NumVfs, c.Rdma.ResourceName, "netdevice", func(snnp *sriovv1.SriovNetworkNodePolicy) {
 		snnp.Spec.IsRdma = true
 	})
 
-	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdevice", c.AppNamespace, c.Netdevice.ResourceName, ipamIpv4)
+	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdev", c.AppNamespace, c.Netdevice.ResourceName, ipamIpv4)
 	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", c.AppNamespace, c.Rdma.ResourceName, ipamIpv4)
 
 	workloadNs := DefineNamespace(c.AppNamespace)
