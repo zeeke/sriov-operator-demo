@@ -19,6 +19,7 @@ type mellanoxNicsConfig struct {
 	AppNamespace string       `env:"APP_NAMESPACE, default=demo-mellanox"`
 	Rdma         policyConfig `env:",prefix=RDMA_"`
 	Netdevice    policyConfig `env:",prefix=NETDEVICE_"`
+	IpamConfig   string       `env:"IPAM"`
 }
 
 func mellanoxDemo() ([]runtime.Object, error) {
@@ -33,6 +34,9 @@ func mellanoxDemo() ([]runtime.Object, error) {
 	}
 	if c.Netdevice.ResourceName == "" {
 		c.Netdevice.ResourceName = "mellanoxnetdevice"
+	}
+	if c.IpamConfig == "" {
+		c.IpamConfig = ipamIpv4
 	}
 
 	clients := testclient.New("")
@@ -54,8 +58,8 @@ func mellanoxDemo() ([]runtime.Object, error) {
 		snnp.Spec.IsRdma = true
 	})
 
-	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdev", c.AppNamespace, c.Netdevice.ResourceName, ipamIpv4)
-	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", c.AppNamespace, c.Rdma.ResourceName, ipamIpv4)
+	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdev", c.AppNamespace, c.Netdevice.ResourceName, c.IpamConfig)
+	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", c.AppNamespace, c.Rdma.ResourceName, c.IpamConfig)
 
 	workloadNs := DefineNamespace(c.AppNamespace)
 

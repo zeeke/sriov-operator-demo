@@ -44,7 +44,8 @@ metadata:
   name: demo-mellanox-netdev
   namespace: openshift-sriov-network-operator
 spec:
-  ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
+  ipam: '''{"type": "host-local","ranges": [[{ "subnet": "10.1.2.0/24" }], [{ "subnet":
+    "2001:db8:1::0/64" }]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
   linkState: enable
   networkNamespace: mlxapp-ns
   resourceName: mlxnetdevicecustom
@@ -57,7 +58,8 @@ metadata:
   name: demo-mellanox-rdma
   namespace: openshift-sriov-network-operator
 spec:
-  ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
+  ipam: '''{"type": "host-local","ranges": [[{ "subnet": "10.1.2.0/24" }], [{ "subnet":
+    "2001:db8:1::0/64" }]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
   linkState: enable
   networkNamespace: mlxapp-ns
   resourceName: mlxrdmacustom

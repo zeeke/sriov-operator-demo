@@ -26,6 +26,7 @@ func TestIntelDemoCustomValues(t *testing.T) {
 	defer mockEnv(t, "INTEL_NICS_VFIO_NUM_VFS", "42")()
 	defer mockEnv(t, "INTEL_NICS_NETDEVICE_RESOURCE_NAME", "intelnetdevicecustom")()
 	defer mockEnv(t, "INTEL_NICS_NETDEVICE_NUM_VFS", "43")()
+	defer mockEnv(t, "INTEL_NICS_IPAM", `'{"type": "host-local","ranges": [[{ "subnet": "10.1.2.0/24" }], [{ "subnet": "2001:db8:1::0/64" }]],"dataDir": "/run/my-orchestrator/container-ipam-state"}`)()
 
 	objects, err := intelDemo()
 	assert.NoError(t, err)

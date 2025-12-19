@@ -26,6 +26,7 @@ func TestMellanoxDemoCustomValues(t *testing.T) {
 	defer mockEnv(t, "MELLANOX_NICS_RDMA_NUM_VFS", "42")()
 	defer mockEnv(t, "MELLANOX_NICS_NETDEVICE_RESOURCE_NAME", "mlxnetdevicecustom")()
 	defer mockEnv(t, "MELLANOX_NICS_NETDEVICE_NUM_VFS", "43")()
+	defer mockEnv(t, "MELLANOX_NICS_IPAM", `'{"type": "host-local","ranges": [[{ "subnet": "10.1.2.0/24" }], [{ "subnet": "2001:db8:1::0/64" }]],"dataDir": "/run/my-orchestrator/container-ipam-state"}`)()
 
 	objects, err := mellanoxDemo()
 	assert.NoError(t, err)

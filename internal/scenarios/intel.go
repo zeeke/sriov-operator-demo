@@ -19,6 +19,7 @@ type intelNicsConfig struct {
 	AppNamespace string       `env:"APP_NAMESPACE, default=demo-intel"`
 	Vfio         policyConfig `env:",prefix=VFIO_"`
 	Netdevice    policyConfig `env:",prefix=NETDEVICE_"`
+	IpamConfig   string       `env:"IPAM"`
 }
 
 func intelDemo() ([]runtime.Object, error) {
@@ -33,6 +34,9 @@ func intelDemo() ([]runtime.Object, error) {
 	}
 	if c.Netdevice.ResourceName == "" {
 		c.Netdevice.ResourceName = "intelnetdevice"
+	}
+	if c.IpamConfig == "" {
+		c.IpamConfig = ipamIpv4
 	}
 
 	clients := testclient.New("")
@@ -52,8 +56,8 @@ func intelDemo() ([]runtime.Object, error) {
 	netdevicePolicy := DefineSriovPolicy("demo-intel-netdev", nic.Name+"#10-20", node, c.Netdevice.NumVfs, c.Netdevice.ResourceName, "netdevice")
 	vfioPolicy := DefineSriovPolicy("demo-intel-vfio", nic.Name+"#21-31", node, c.Vfio.NumVfs, c.Vfio.ResourceName, "vfio-pci")
 
-	netdeviceNet := DefineSriovNetwork("demo-intel-netdev", c.AppNamespace, c.Netdevice.ResourceName, ipamIpv4)
-	vfioNet := DefineSriovNetwork("demo-intel-vfio", c.AppNamespace, c.Vfio.ResourceName, ipamIpv4)
+	netdeviceNet := DefineSriovNetwork("demo-intel-netdev", c.AppNamespace, c.Netdevice.ResourceName, c.IpamConfig)
+	vfioNet := DefineSriovNetwork("demo-intel-vfio", c.AppNamespace, c.Vfio.ResourceName, c.IpamConfig)
 
 	workloadNs := DefineNamespace(c.AppNamespace)
 
