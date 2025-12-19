@@ -59,7 +59,9 @@ func mellanoxDemo() ([]runtime.Object, error) {
 	})
 
 	netdeviceNet := DefineSriovNetwork("demo-mellanox-netdev", c.AppNamespace, c.Netdevice.ResourceName, c.IpamConfig)
+	netdeviceNet.Spec.LogLevel = "debug"
 	rdmaNet := DefineSriovNetwork("demo-mellanox-rdma", c.AppNamespace, c.Rdma.ResourceName, c.IpamConfig)
+	rdmaNet.Spec.LogLevel = "debug"
 
 	workloadNs := DefineNamespace(c.AppNamespace)
 

@@ -46,6 +46,7 @@ spec:
   ipam: '''{"type": "host-local","ranges": [[{ "subnet": "10.1.2.0/24" }], [{ "subnet":
     "2001:db8:1::0/64" }]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
   linkState: enable
+  logLevel: debug
   networkNamespace: intelapp-ns
   resourceName: intelnetdevicecustom
 status: {}
@@ -60,6 +61,7 @@ spec:
   ipam: '''{"type": "host-local","ranges": [[{ "subnet": "10.1.2.0/24" }], [{ "subnet":
     "2001:db8:1::0/64" }]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
   linkState: enable
+  logLevel: debug
   networkNamespace: intelapp-ns
   resourceName: intelvfiocustom
 status: {}

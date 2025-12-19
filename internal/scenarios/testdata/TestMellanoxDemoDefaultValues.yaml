@@ -46,6 +46,7 @@ metadata:
 spec:
   ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
   linkState: enable
+  logLevel: debug
   networkNamespace: demo-mellanox
   resourceName: mellanoxnetdevice
 status: {}
@@ -59,6 +60,7 @@ metadata:
 spec:
   ipam: '{"type": "host-local","ranges": [[{"subnet": "1.1.1.0/24"}]],"dataDir": "/run/my-orchestrator/container-ipam-state"}'
   linkState: enable
+  logLevel: debug
   networkNamespace: demo-mellanox
   resourceName: mellanoxrdma
 status: {}

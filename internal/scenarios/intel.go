@@ -57,7 +57,9 @@ func intelDemo() ([]runtime.Object, error) {
 	vfioPolicy := DefineSriovPolicy("demo-intel-vfio", nic.Name+"#21-31", node, c.Vfio.NumVfs, c.Vfio.ResourceName, "vfio-pci")
 
 	netdeviceNet := DefineSriovNetwork("demo-intel-netdev", c.AppNamespace, c.Netdevice.ResourceName, c.IpamConfig)
+	netdeviceNet.Spec.LogLevel = "debug"
 	vfioNet := DefineSriovNetwork("demo-intel-vfio", c.AppNamespace, c.Vfio.ResourceName, c.IpamConfig)
+	vfioNet.Spec.LogLevel = "debug"
 
 	workloadNs := DefineNamespace(c.AppNamespace)
 
