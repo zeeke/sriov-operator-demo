@@ -3,11 +3,14 @@
 bundle_image=$1
 
 uninstall_operator() {
+    oc delete -n openshift-sriov-network-operator sriovnetworknodepolicy --all
+    
+    # Wait for a stable empty SR-IOV configuration
+    oc get crd sriovnetworknodestates.sriovnetwork.openshift.io > /dev/null && \
+        until oc get sriovnetworknodestates.sriovnetwork.openshift.io -A -o jsonpath='{.items[*].status.syncStatus}' | grep -qx Failed; do echo "waiting cluster stable"; sleep 5; done
+    
     oc delete -n openshift-sriov-network-operator sriovnetwork --all
     oc delete -n openshift-sriov-network-operator sriovibnetwork --all
-    oc delete -n openshift-sriov-network-operator sriovnetworknodepolicy --all
-
-    sleep 30
     oc delete -n openshift-sriov-network-operator sriovoperatorconfig default
     sleep 5
 
