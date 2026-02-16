@@ -7,7 +7,7 @@ uninstall_operator() {
     
     # Wait for a stable empty SR-IOV configuration
     oc get crd sriovnetworknodestates.sriovnetwork.openshift.io > /dev/null && \
-        until oc get sriovnetworknodestates.sriovnetwork.openshift.io -A -o jsonpath='{.items[*].status.syncStatus}' | grep -qx Failed; do echo "waiting cluster stable"; sleep 5; done
+        until oc get sriovnetworknodestates.sriovnetwork.openshift.io -A -o jsonpath='{.items[*].status.syncStatus}' | grep -qx Succeeded; do echo "waiting cluster stable"; sleep 5; done
     
     oc delete -n openshift-sriov-network-operator sriovnetwork --all
     oc delete -n openshift-sriov-network-operator sriovibnetwork --all
@@ -33,8 +33,6 @@ uninstall_operator() {
     oc annotate node --all sriovnetwork.openshift.io/state-
     oc annotate node --all sriovnetwork.openshift.io/desired-state-
     oc annotate node --all sriovnetwork.openshift.io/current-state-
-
-    oc adm uncordon -l node-role.kubernetes.io/worker=
 }
 
 create_namespace() {
